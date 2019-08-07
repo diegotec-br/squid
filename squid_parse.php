@@ -3,7 +3,7 @@
 
 <?php
 
-$db_host = '172.16.0.178';
+$db_host = 'ip_dns';
 $db_name = 'squid';
 $db_user = 'usuario'; // Usuário precisa ter permissão de escrita na base.
 $db_pass = 'senha';
