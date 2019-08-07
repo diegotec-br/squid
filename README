@@ -1,0 +1,39 @@
+1 - Criar base de dados.
+mysql>  create database squid;
+
+2 - Criar tabela para armazenamento dos logs.
+
+CREATE TABLE accesslog (
+  id int(11) NOT NULL AUTO_INCREMENT,
+  time varchar(14),
+  remotehost varchar(15),
+  status varchar(15),
+  code int(10),
+  bytes int(15),
+  method varchar(15),
+  url varchar(500),
+  user varchar(50),
+  UNIQUE KEY id (id)
+);
+
+3 - Criar script e inserir código no arquivo squid_parse.php
+# mkdir -p /var/www/html/proxy/scripts
+# vim /var/www/html/proxy/scripts/squid_parse.php
+
+4 - Criar System init para controle do processo e inserir conteúdo abaixo de ">>>".
+# vim /lib/systemd/system/squid-dblog.service
+>>>
+[Unit]
+Description=Grava log de acesso na base Mysql
+
+[Service]
+Type=simple
+ExecStart=/var/www/html/proxy/scripts/squid_parse.php &
+
+[Install]
+WantedBy=multi-user.target
+
+5 - Iniciar serviço
+# systemctl daemon-reload
+# systemctl restart squid-dblog.service
+# systemctl enable squid-dblog.service
