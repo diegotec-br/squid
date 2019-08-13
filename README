@@ -20,6 +20,9 @@ CREATE TABLE accesslog (
 # mkdir -p /var/www/html/proxy/scripts
 # vim /var/www/html/proxy/scripts/squid_parse.php
 
+3.2 - Dar permissão de execução no arquivo
+# chmod +x /var/www/html/proxy/scripts/squid_parse.php
+
 4 - Criar System init para controle do processo e inserir conteúdo abaixo de ">>>".
 # vim /lib/systemd/system/squid-dblog.service
 >>>
@@ -37,3 +40,36 @@ WantedBy=multi-user.target
 # systemctl daemon-reload
 # systemctl restart squid-dblog.service
 # systemctl enable squid-dblog.service
+
+6 - Criar script para reiniciar serviço do squid-dblog na rotação de log
+# vim /root/restart_squid-db
+>>>
+#!/bin/bash
+
+systemctl restart squid-dblog.service
+
+exit 0
+
+6.1 Dar permissão de execução no arquivo
+# chmod +x /root/restart_squid-db
+
+7 - COnfigurar logrotate para o serviço do squid
+vim /etc/logrotate.d/squid
+>>>
+/var/log/squid/*.log {
+        daily
+        compress
+        delaycompress
+        rotate 14
+        missingok
+        nocreate
+        sharedscripts
+        prerotate
+                test ! -x /usr/sbin/sarg-reports || /usr/sbin/sarg-reports daily
+        endscript
+        postrotate
+                test ! -e /var/run/squid.pid || test ! -x /usr/sbin/squid || /usr/sbin/squid -k rotate && /root/restart_squid-db
+        endscript
+}
+
+
